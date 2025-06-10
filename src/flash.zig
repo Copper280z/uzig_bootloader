@@ -18,53 +18,51 @@ pub const VTable = struct {
     sector_size_fn: ?*const fn (*anyopaque, sector: u8) BaseError!u32,
 };
 
-pub const Flash = struct {
-    const Flash_Device = @This();
-    ptr: *anyopaque,
-    vtable: VTable,
-    pub fn init(flash: Flash_Device) BaseError!void {
-        if (flash.vtable.init_fn) |initFn| {
-            return initFn(flash.ptr);
-        }
+const Flash_Device = @This();
+ptr: *anyopaque,
+vtable: VTable,
+pub fn init(flash: Flash_Device) BaseError!void {
+    if (flash.vtable.init_fn) |initFn| {
+        return initFn(flash.ptr);
     }
-    pub fn deinit(flash: Flash_Device) BaseError!void {
-        if (flash.vtable.deinit_fn) |deinitFn| {
-            return deinitFn(flash.ptr);
-        }
+}
+pub fn deinit(flash: Flash_Device) BaseError!void {
+    if (flash.vtable.deinit_fn) |deinitFn| {
+        return deinitFn(flash.ptr);
     }
-    pub fn enableWrite(flash: Flash_Device) BaseError!void {
-        if (flash.vtable.enable_write_fn) |enable_write_fn| {
-            return try enable_write_fn(flash.ptr);
-        }
+}
+pub fn enableWrite(flash: Flash_Device) BaseError!void {
+    if (flash.vtable.enable_write_fn) |enable_write_fn| {
+        return try enable_write_fn(flash.ptr);
     }
-    pub fn disableWrite(flash: Flash_Device) BaseError!void {
-        if (flash.vtable.disable_write_fn) |disable_write_fn| {
-            return try disable_write_fn(flash.ptr);
-        }
+}
+pub fn disableWrite(flash: Flash_Device) BaseError!void {
+    if (flash.vtable.disable_write_fn) |disable_write_fn| {
+        return try disable_write_fn(flash.ptr);
     }
-    pub fn eraseSector(flash: Flash_Device, sector: u8) WriteError!void {
-        const erase_fn = flash.vtable.erase_fn orelse return error.Unsupported;
-        return erase_fn(flash.ptr, sector);
-    }
-    pub fn write(flash: Flash_Device, sector: u8, data: []u8) WriteError!void {
-        const sector_size = try flash.sectorSize(sector);
-        if (data.len > sector_size) return error.SectorOverrun;
-        try flash.eraseSector(sector);
-        const write_fn = flash.vtable.write_fn orelse return error.Unsupported;
-        return write_fn(flash.ptr, sector, data);
-    }
-    pub fn read(flash: Flash_Device, offset: u32, data: []u8) ReadError!usize {
-        const read_fn = flash.vtable.read_fn orelse return error.Unsupported;
-        return read_fn(flash.ptr, offset, data);
-    }
-    // pub fn findSector(flash: Flash_Device, offset: u32) BaseError!u8 {
+}
+pub fn eraseSector(flash: Flash_Device, sector: u8) WriteError!void {
+    const erase_fn = flash.vtable.erase_fn orelse return error.Unsupported;
+    return erase_fn(flash.ptr, sector);
+}
+pub fn write(flash: Flash_Device, sector: u8, data: []u8) WriteError!void {
+    const sector_size = try flash.sectorSize(sector);
+    if (data.len > sector_size) return error.SectorOverrun;
+    try flash.eraseSector(sector);
+    const write_fn = flash.vtable.write_fn orelse return error.Unsupported;
+    return write_fn(flash.ptr, sector, data);
+}
+pub fn read(flash: Flash_Device, offset: u32, data: []u8) ReadError!usize {
+    const read_fn = flash.vtable.read_fn orelse return error.Unsupported;
+    return read_fn(flash.ptr, offset, data);
+}
+// pub fn findSector(flash: Flash_Device, offset: u32) BaseError!u8 {
 
-    // }
-    pub fn sectorSize(flash: Flash_Device, sector: u8) BaseError!u32 {
-        const sector_size_fn = flash.vtable.sector_size_fn orelse return error.Unsupported;
-        return sector_size_fn(flash.ptr, sector);
-    }
-};
+// }
+pub fn sectorSize(flash: Flash_Device, sector: u8) BaseError!u32 {
+    const sector_size_fn = flash.vtable.sector_size_fn orelse return error.Unsupported;
+    return sector_size_fn(flash.ptr, sector);
+}
 
 pub const TestDevice = struct {
     arena: std.heap.ArenaAllocator,
@@ -73,8 +71,8 @@ pub const TestDevice = struct {
     sector_size: u32 = 16384,
     num_sectors: u8 = 4,
 
-    pub fn flash_device(td: *TestDevice) Flash {
-        return Flash{ .vtable = vtable, .ptr = td };
+    pub fn flash_device(td: *TestDevice) Flash_Device {
+        return Flash_Device{ .vtable = vtable, .ptr = td };
     }
 
     pub fn init(ctx: *anyopaque) BaseError!void {

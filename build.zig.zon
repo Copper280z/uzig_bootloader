@@ -1,0 +1,20 @@
+.{
+    .name = .zigfoc,
+    .version = "0.0.0",
+    .dependencies = .{
+        .@"microzig" = .{ .path = "../microzig" },
+        .@"microzig/bsp/stmicro/stm32" = .{ .path = "../microzig/bsp/stmicro/stm32" },
+        // .rtt = .{
+        //     .url = "https://github.com/elpekenin/segger-rtt/archive/refs/heads/time_getter.tar.gz",
+        //     .hash = "12206812bf16e697049b257fbccba955113a076f470b6e39e064e9f43e3febc249c7",
+        // },
+    },
+
+    .paths = .{
+        "LICENSE",
+        "build.zig",
+        "build.zig.zon",
+        "src",
+    },
+    .fingerprint = 0x532ca59af60bc4f4,
+}
